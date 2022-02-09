@@ -1,0 +1,33 @@
+Object[] previousRow;
+
+public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
+{
+
+    Object[] r = getRow();
+
+    if (r == null) {
+      setOutputDone();
+      return false;
+    }
+
+    Object[] outputRow = createOutputRow(r, data.outputRowMeta.size());
+
+    for (int i=0; i < getInputRowMeta().size(); i++) {
+        logBasic(data.inputRowMeta.getString(r, i));
+        if (data.inputRowMeta.getString(r, i) == null && (previousRow != null))  {
+            // si el registro actual está vacío, coge la información del registro previo
+            outputRow[i] = previousRow[i];
+        }   
+        else {
+            // sino coge el registro actual
+            outputRow[i] = r[i];
+        }
+
+    }
+
+    putRow(data.outputRowMeta, outputRow);
+    // guardar la fila actual como futura fila previa
+    previousRow = data.outputRowMeta.cloneRow(outputRow);
+
+    return true;
+}
